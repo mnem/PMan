@@ -13,8 +13,14 @@ package pman
      * @author David Wagner
      *
      */
-    public class P
+    public final class P
     {
+        public static const GFX_POINT:int = 0;
+        public static const GFX_FILLED:int = 1;
+        public static const GFX_POINTBLOCK:int = 2;
+        public static const GFX_DISC:int = 3;
+        public static const GFX_BLUR:int = 4;
+
         /**
          * Maximum life a particle can have
          */
@@ -35,10 +41,15 @@ package pman
          */
         public var life :int;
 
-        /**
-         * The bounds of the particle
-         */
-        public var bounds :Rectangle;
+        private var scratch:Rectangle = new Rectangle(0,0,3,3);
+
+        public var x:int;
+        public var y:int;
+
+        public var left:int;
+        public var right:int;
+        public var top:int;
+        public var bottom:int;
 
         /**
          * The current draw method of the particle. Of the form, function(p_dest :BitmapData) :void
@@ -61,55 +72,42 @@ package pman
          * @param p_colour
          *
          */
-        public function P( p_colour :int )
+        public function P( p_colour :int, gfx:int )
         {
             _colour = 0x00ffffff & p_colour;
-            bounds = new Rectangle( 0, 0, 3, 3 );
+
+            x = 0;
+            y = 0;
 
             vx = 0;
             vy = 0;
 
             life = LIFE_MAX;
 
-            draw = drawPointCube;
-
-            if( draw == drawGraphic )
+            if(gfx == GFX_DISC || gfx == GFX_BLUR)
             {
-                //createGraphicDisc();
-                createGraphicBlur();
+                draw = drawGraphic;
+                if(gfx == GFX_DISC)
+                {
+                    createGraphicDisc();
+                }
+                else
+                {
+                    createGraphicBlur();
+                }
             }
-        }
-
-        /**
-         * X location
-         */
-        public function get x() :Number
-        {
-            return bounds.x;
-        }
-
-        /**
-         * @private
-         */
-        public function set x( p_value :Number ) :void
-        {
-            bounds.x = p_value;
-        }
-
-        /**
-         * Y location
-         */
-        public function get y() :Number
-        {
-            return bounds.y;
-        }
-
-        /**
-         * @private
-         */
-        public function set y( p_value :Number ) :void
-        {
-            bounds.y = p_value;
+            else if(gfx == GFX_POINTBLOCK)
+            {
+                draw = drawPointCube;
+            }
+            else if(gfx == GFX_FILLED)
+            {
+                draw = drawFillRect;
+            }
+            else
+            {
+                draw = drawPoint;
+            }
         }
 
         /**
@@ -131,10 +129,10 @@ package pman
             m.translate( -pb.left, -pb.top );
             particleBD.draw( particle, m, null, null, null, true );
 
-            bounds.width = particleBD.width;
-            bounds.height = particleBD.height;
+            scratch.width = particleBD.width;
+            scratch.height = particleBD.height;
 
-            _graphic = particleBD.getPixels( bounds );
+            _graphic = particleBD.getPixels( scratch );
 
             particleBD.dispose();
         }
@@ -147,7 +145,7 @@ package pman
             particle.graphics.beginFill( _colour, 1.0 );
             particle.graphics.drawRect( 0, 0, 2, 2);
             particle.graphics.endFill();
-            particle.filters = [ new BlurFilter( 10, 10, 1 ) ];
+            particle.filters = [ new BlurFilter( 4, 4, 1 ) ];
 
             particleBD = new BitmapData( particle.width, particle.height, true, 0x00000000 );
             var pb :Rectangle = particle.getBounds(particle);
@@ -155,10 +153,10 @@ package pman
             m.translate( -pb.left, -pb.top );
             particleBD.draw( particle, m, null, null, null, true );
 
-            bounds.width = particleBD.width;
-            bounds.height = particleBD.height;
+            scratch.width = particleBD.width;
+            scratch.height = particleBD.height;
 
-            _graphic = particleBD.getPixels( bounds );
+            _graphic = particleBD.getPixels( scratch );
 
             particleBD.dispose();
         }
@@ -171,7 +169,7 @@ package pman
          */
         public function drawPoint( p_bd :BitmapData ) :void
         {
-            p_bd.setPixel32(bounds.x,bounds.y, _colour| (life << 24));
+            p_bd.setPixel32(x,y, _colour| (life << 24));
         }
 
         /**
@@ -182,10 +180,13 @@ package pman
          */
         public function drawPointCube( p_bd :BitmapData ) :void
         {
-            p_bd.setPixel32(bounds.x,bounds.y, _colour | (life << 24));
-            p_bd.setPixel32(bounds.x+1,bounds.y, _colour | (life << 24));
-            p_bd.setPixel32(bounds.x+1,bounds.y+1, _colour | (life << 24));
-            p_bd.setPixel32(bounds.x,bounds.y+1, _colour | (life << 24));
+            var c:int = _colour | (life << 24);
+            var xx:int=x+1;
+            var yy:int=y+1;
+            p_bd.setPixel32(x ,y ,c);
+            p_bd.setPixel32(xx,y ,c);
+            p_bd.setPixel32(xx,yy,c);
+            p_bd.setPixel32(x ,yy,c);
         }
 
         /**
@@ -196,7 +197,9 @@ package pman
          */
         public function drawFillRect( p_bd :BitmapData ) :void
         {
-            p_bd.fillRect( bounds, _colour | (life << 24) );
+            scratch.x = x;
+            scratch.y = y;
+            p_bd.fillRect( scratch, _colour | (life << 24) );
         }
 
         /**
@@ -207,8 +210,10 @@ package pman
          */
         public function drawGraphic( p_bd :BitmapData ) :void
         {
+            scratch.x = x;
+            scratch.y = y;
             _graphic.position = 0;
-            p_bd.setPixels( bounds, _graphic );
+            p_bd.setPixels( scratch, _graphic );
         }
     }
 }

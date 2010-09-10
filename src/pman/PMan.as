@@ -14,11 +14,12 @@ package pman
      */
     public class PMan extends Sprite
     {
-        private var _emitters :Array;
+        private var _emitters :Vector.<PEmitter>;
         private var _bd :BitmapData;
         private var _b :Bitmap;
         private var _r :Rectangle;
         private var _zeroPoint :Point;
+        public var particleCount:int;
 
         /**
          * Constructor.
@@ -34,12 +35,12 @@ package pman
             _zeroPoint = new Point();
 
             _r = new Rectangle( 0, 0, p_width, p_height );
-            _bd = new BitmapData(_r.width, _r.height, true, 0x000000);
+            _bd = new BitmapData(_r.width, _r.height, false, 0x00000000);
             _b = new Bitmap(_bd, "never", false);
 
             addChild(_b);
 
-            _emitters = [];
+            _emitters = new Vector.<PEmitter>;
         }
 
         /**
@@ -53,13 +54,13 @@ package pman
          * @param p_boundingArea Indicates a constraining box the particles must appear in. If null, the full size of the area is used.
          *
          */
-        public function addEmitter( p_particleCount :Number, p_x :Number, p_y :Number, p_colours :Vector.<int>, p_bouncy :Boolean, p_boundingArea :Rectangle = null ) :void
+        public function addEmitter( p_particleCount :Number, p_x :Number, p_y :Number, p_colours :Vector.<int>, p_bouncy :Boolean, gfx:int, p_boundingArea :Rectangle = null ) :void
         {
             if( p_boundingArea == null )
             {
                 p_boundingArea = _r;
             }
-            _emitters.push( new PEmitter( p_particleCount, p_x, p_y, _bd, p_boundingArea, p_colours, p_bouncy ) );
+            _emitters.push( new PEmitter( p_particleCount, p_x, p_y, _bd, p_boundingArea, p_colours, p_bouncy, gfx ) );
         }
 
         /**
@@ -69,12 +70,14 @@ package pman
         public function update() :void
         {
             _bd.lock();
-            _bd.fillRect(_r, 0x00ffffff);
+            _bd.fillRect(_r, 0x000000);
 
+            particleCount = 0;
             var i:int = _emitters.length;
-            while(--i >= 0)
+            while(i--)
             {
                 _emitters[i].update();
+                particleCount += _emitters[i].particleCount;
             }
 
             _bd.unlock();
