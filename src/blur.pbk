@@ -1,0 +1,81 @@
+<languageVersion: 1.0;>
+
+kernel HorizontalGaussianBlur
+<   namespace : "com.adobe.example";
+    vendor : "Adobe Systems Inc.";
+    version : 1;
+    description : "The horizontal convolution of a Gaussian blur"; >
+{
+    input image4 src;
+    output float4 result;
+    
+    parameter int radius
+    <
+        minValue : 1;
+        maxValue : 6;
+        defaultValue : 6;
+    >;
+    
+    void evaluatePixel()
+    {
+       pixel4 center, band1, band2, band3, band4, band5, band6;
+       float2 pos = outCoord();
+       
+       //Sample image in bands
+       if( radius > 5 )
+       {
+            band6 = sampleNearest(src, float2(pos.x - 6.0, pos.y)) 
+                  + sampleNearest(src, float2(pos.x + 6.0, pos.y));
+       } 
+       if( radius > 4 )
+       {
+            band5 = sampleNearest(src, float2(pos.x - 5.0, pos.y)) 
+                  + sampleNearest(src, float2(pos.x + 5.0, pos.y));
+       }        
+       if( radius > 3 )
+       {
+            band4 = sampleNearest(src, float2(pos.x - 4.0, pos.y)) 
+                  + sampleNearest(src, float2(pos.x + 4.0, pos.y));
+       }       
+       if( radius > 2 )
+       {
+            band3 = sampleNearest(src, float2(pos.x - 3.0, pos.y)) 
+                  + sampleNearest(src, float2(pos.x + 3.0, pos.y));
+       }
+       if( radius > 1 )
+       {
+            band2 = sampleNearest(src, float2(pos.x - 2.0, pos.y)) 
+                  + sampleNearest(src, float2(pos.x + 2.0, pos.y));
+       }
+
+       band1 = sampleNearest(src, float2(pos.x - 1.0, pos.y)) 
+             + sampleNearest(src, float2(pos.x + 1.0, pos.y));
+       center = sampleNearest(src, pos);
+       
+       //Apply weights and compute resulting pixel
+       if( radius == 6 )
+       {
+            result = (band6 + (band5 * 12.0) + (band4 * 66.0) + (band3 * 220.0) + (band2 * 495.0) + (band1 * 792.0) + (center * 924.0))/4096.0;
+       }
+       if( radius == 5 )
+       {
+            result = (band5 + (band4 * 10.0) + (band3 * 45.0) + (band2 * 120.0) + (band1 * 210.0) + (center * 252.0))/1024.0;
+       }       
+       if( radius == 4 )
+       {
+            result = (band4 + (band3 * 8.0) + (band2 * 28.0) + (band1 * 56.0) + (center * 70.0))/256.0;
+       }
+       if( radius == 3 )
+       {
+            result = (band3 + (band2 * 6.0) + (band1 * 15.0) + (center * 20.0))/64.0;
+       }
+       if( radius == 2 )
+       {
+            result = (band2 + (band1 * 4.0) + (center * 6.0))/16.0;
+       }
+       if( radius == 1 )
+       {
+            result = (band1 + (center * 2.0))/4.0;
+       }
+    }
+}

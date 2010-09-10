@@ -1,10 +1,10 @@
-package pman
-{
-    import flash.display.Bitmap;
-    import flash.display.BitmapData;
-    import flash.display.Sprite;
-    import flash.geom.Point;
-    import flash.geom.Rectangle;
+package pman {
+	import flash.display.Bitmap;
+	import flash.display.BitmapData;
+	import flash.display.Sprite;
+	import flash.filters.BitmapFilter;
+	import flash.geom.Point;
+	import flash.geom.Rectangle;
 
     /**
      * Particle manager.
@@ -16,10 +16,13 @@ package pman
     {
         private var _emitters :Vector.<PEmitter>;
         private var _bd :BitmapData;
+        private var _bclear :BitmapData;
         private var _b :Bitmap;
         private var _r :Rectangle;
         private var _zeroPoint :Point;
         public var particleCount:int;
+        private var pfilters:Vector.<BitmapFilter>;
+        private var filterCache1:BitmapFilter;
 
         /**
          * Constructor.
@@ -28,9 +31,23 @@ package pman
          * @param p_height Height of the particle area.
          *
          */
-        public function PMan( p_width :int, p_height :int )
+        public function PMan( p_width :int, p_height :int, particleFilters:Array = null, clearColour:uint = 0x01000000 )
         {
             super();
+            
+            if(particleFilters != null && particleFilters.length > 0)
+            {
+	            pfilters = new Vector.<BitmapFilter>(particleFilters.length, true);
+	            filterCache1 = particleFilters[0];
+	            for(var i:int =0; i < particleFilters.length; i++)
+	            {
+	            	pfilters[i] = particleFilters[i];
+	            }
+            }
+            else
+            {
+	            pfilters = new Vector.<BitmapFilter>();
+            }
 
             _zeroPoint = new Point();
 
@@ -39,6 +56,8 @@ package pman
             _b = new Bitmap(_bd, "never", false);
 
             addChild(_b);
+            
+            _bclear = new BitmapData(_r.width, _r.height, true, clearColour);
 
             _emitters = new Vector.<PEmitter>;
         }
@@ -70,7 +89,7 @@ package pman
         public function update() :void
         {
             _bd.lock();
-            _bd.fillRect(_r, 0x000000);
+			_bd.copyPixels(_bclear, _r, _zeroPoint);
 
             particleCount = 0;
             var i:int = _emitters.length;
@@ -79,6 +98,17 @@ package pman
                 _emitters[i].update();
                 particleCount += _emitters[i].particleCount;
             }
+
+
+			if(pfilters.length > 0)
+			{
+				_bd.applyFilter(_bd, _r, _zeroPoint, filterCache1);
+				i = pfilters.length;
+    	        while(i-- > 1)
+	            {
+					_bd.applyFilter(_bd, _r, _zeroPoint, pfilters[i]);
+	            }
+			}
 
             _bd.unlock();
         }

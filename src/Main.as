@@ -1,22 +1,22 @@
-package
-{
-    import flash.display.StageQuality;
-    import pman.P;
-    import pman.PMan;
+package {
+	import pman.P;
+	import pman.PMan;
 
-    import flash.display.Sprite;
-    import flash.display.StageAlign;
-    import flash.display.StageDisplayState;
-    import flash.display.StageScaleMode;
-    import flash.events.ContextMenuEvent;
-    import flash.events.Event;
-    import flash.events.MouseEvent;
-    import flash.geom.Rectangle;
-    import flash.text.TextField;
-    import flash.text.TextFormat;
-    import flash.ui.ContextMenu;
-    import flash.ui.ContextMenuItem;
-    import flash.utils.getTimer;
+	import flash.display.Sprite;
+	import flash.display.StageAlign;
+	import flash.display.StageDisplayState;
+	import flash.display.StageQuality;
+	import flash.display.StageScaleMode;
+	import flash.events.ContextMenuEvent;
+	import flash.events.Event;
+	import flash.events.MouseEvent;
+	import flash.filters.BlurFilter;
+	import flash.geom.Rectangle;
+	import flash.text.TextField;
+	import flash.text.TextFormat;
+	import flash.ui.ContextMenu;
+	import flash.ui.ContextMenuItem;
+	import flash.utils.getTimer;
 
     /**
      * @author dave
@@ -35,6 +35,8 @@ package
             Vector.<int>([0x494A4C, 0x656573, 0x8A7C99, 0xC38ACC, 0xFF81FF]),
         ];
 
+		[Embed(source="blur.pbj", mimeType="application/octet-stream")]
+		private var BlurKernel :Class;		
 
         // Hackily position the fullscreen command. This will break in some cases. So there.
         private static const CM_FULLSCREEN :int = 0;
@@ -66,7 +68,12 @@ package
 
         protected function addParticleSystem():void
         {
-            system = new PMan(800, 600);
+//			Yeek - filter kernel so slow... Must look into why.        	
+//        	var f:Array = [new ShaderFilter(new Shader(new BlurKernel()))];
+        	var f:Array = [new BlurFilter(3,3,1)];
+        	
+            system = new PMan(800, 600, f);
+            
             addChild(system);
         }
 
