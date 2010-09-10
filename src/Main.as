@@ -47,7 +47,6 @@ package {
 
         // To vary the particles a little
         protected var c:int = 0;
-        protected var bounce:Boolean = false;
 
         // Stat stuff
         protected var frameDrawTimes:Vector.<int> = new Vector.<int>(SAMPLES,true);
@@ -123,9 +122,8 @@ package {
                 gfx = P.GFX_FILLED;
             }
 
-            system.addEmitter(PARTICLES_PER_EMITTER, event.stageX, event.stageY, COLOURS[c++], false, gfx);
+            system.addEmitter(PARTICLES_PER_EMITTER, event.stageX, event.stageY, COLOURS[c++], event.ctrlKey, gfx);
             if(c >= COLOURS.length) c = 0;
-            bounce = !bounce;
         }
 
         protected function updateStats():void
