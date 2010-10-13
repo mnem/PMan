@@ -37,8 +37,8 @@ package
             Vector.<int>([0x494A4C, 0x656573, 0x8A7C99, 0xC38ACC, 0xFF81FF]),
         ];
 
-        [Embed(source="blur.pbj", mimeType="application/octet-stream")]
-        private var BlurKernel :Class;
+//        [Embed(source="blur.pbj", mimeType="application/octet-stream")]
+//        private var BlurKernel :Class;
 
         // Hackily position the fullscreen command. This will break in some cases. So there.
         private static const CM_FULLSCREEN :int = 0;
