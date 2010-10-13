@@ -28,7 +28,7 @@ package
     {
         private static const NO_PARTICLES_MESSAGE:String = "Click somewhere to add a particle emitter.";
         private static const SAMPLES:int = 60;
-        private static const PARTICLES_PER_EMITTER:int = 500;
+        private static const PARTICLES_PER_EMITTER:int = 10;
         private static const COLOURS:Array = [
             Vector.<int>([0x001F11, 0x204709, 0x0C8558, 0xFFD96A, 0xFF4533]),
             Vector.<int>([0xFFFFFF, 0xFFEA47, 0xFFB921, 0x2B777F, 0x151836]),
@@ -75,10 +75,10 @@ package
         {
 //			Yeek - filter kernel so slow... Must look into why.
 //            var f:Array = [new ShaderFilter(new Shader(new BlurKernel()))];
-            var f:Array = [new BlurFilter(3,3,1)];
+//            var f:Array = [new BlurFilter(3,3,1)];
 //            var f:Array = null;
 
-            system = new PMan(800, 600, f);
+            system = new PMan(800, 600, null, 0x10000000);
 
             addChild(system);
         }
